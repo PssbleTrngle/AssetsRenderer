@@ -1,25 +1,19 @@
-import { ResolverInfo } from '@pssbletrngle/pack-resolver'
+import { createFilter, IResolver } from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers, Options as MergerOptions } from '@pssbletrngle/resource-merger'
-import { existsSync } from 'fs'
-import { emptyDirSync } from 'fs-extra'
-import match from 'minimatch'
+import chalk from 'chalk'
+import { readdirSync } from 'fs'
+import { emptyDirSync, ensureDirSync } from 'fs-extra'
 import { join } from 'path'
 import { dirSync } from 'tmp'
 import Options from '../cli/options.js'
 import ModelRenderer from '../renderer/ModelRenderer.js'
 import { idOf, Named } from '../renderer/models.js'
 
-export default async function render(from: ResolverInfo[], to: MergerOptions, options: Options) {
-   const tmpDir = dirSync()
+export async function renderUsing(assetsDir: string, to: MergerOptions, options: Options) {
+   const renderer = new ModelRenderer(join(assetsDir, 'assets'))
 
-   const extractor = createDefaultMergers({ includeAssets: true, output: tmpDir.name })
-   await extractor.run(from)
-
-   const renderer = new ModelRenderer(join(tmpDir.name, 'assets'))
-
-   const filePattern = 'assets/$namespace/$path'
+   const filePattern = '$namespace/$path'
    const fileName = (named: Named) => filePattern.replace('$namespace', named.mod).replace('$path', named.id) + '.png'
-   const exists = (named: Named) => to.output && existsSync(join(to.output, fileName(named)))
 
    interface PromiseSkippedResult<T> {
       status: 'skipped'
@@ -28,48 +22,77 @@ export default async function render(from: ResolverInfo[], to: MergerOptions, op
    type Result<T> = PromiseSettledResult<T> | PromiseSkippedResult<T>
    const results: Result<Named>[] = []
 
-   const output = createDefaultMergers({ ...to, includeAssets: true })
+   const output = createDefaultMergers({ ...to, silent: true })
    const all = renderer.getBlocks()
+   console.log(`Found ${all.length} total models`)
+
+   const filter = createFilter(options)
+
    const models = all
+      .map(it => ({ ...it, file: fileName(it) }))
+      .filter(it => filter(idOf(it)))
       .filter(it => {
-         if (options.include?.length) return options.include.some(pattern => match(idOf(it), pattern))
-         return !options.exclude?.some(pattern => match(idOf(it), pattern))
-      })
-      .filter(it => {
-         const cached = !options.overwrite && exists(it)
+         const cached = !options.overwrite && output.exists(it.file)
          if (cached) results.push({ status: 'skipped', value: it })
          return !cached
       })
 
-   const renderResolver: ResolverInfo = {
-      name: 'renderer',
-      resolver: {
-         extract: async acceptor => {
-            for (let block of models)
-               try {
-                  const rendered = await renderer.render(block)
-                  acceptor(fileName(block), rendered)
-                  results.push({ status: 'fulfilled', value: block })
-               } catch (e) {
-                  results.push({ status: 'rejected', reason: (e as Error).message })
-               }
-         },
+   const renderResolver: IResolver = {
+      extract: async acceptor => {
+         for (let block of models)
+            try {
+               const rendered = await renderer.render(block)
+               acceptor(block.file, rendered)
+               results.push({ status: 'fulfilled', value: block })
+            } catch (e) {
+               results.push({ status: 'rejected', reason: (e as Error).message })
+            }
       },
    }
 
    console.log()
-   console.group(`Rendering ${models.length} models`)
-   await output.run([renderResolver])
+   console.group(`Rendering ${models.length} models...`)
+   await output.run(renderResolver)
 
    const fulfilled = results.filter(it => it.status === 'fulfilled')
    const skipped = results.filter(it => it.status === 'skipped')
-   const rejected = results.filter(it => it.status === 'rejected')
-   console.log(`🌄 Success: ${fulfilled.length}`)
-   console.log(`🗻 Skipped: ${skipped.length}`)
-   console.log(`🌋 Error:   ${rejected.length}`)
-
+   const rejected = results.filter(it => it.status === 'rejected') as PromiseRejectedResult[]
+   console.log(`🌄 Success: ${chalk.green(fulfilled.length)}`)
+   console.log(`🗻 Skipped: ${chalk.yellow(skipped.length)}`)
+   console.group(`🌋 Failed:  ${chalk.red(rejected.length)}`)
+   if (options.printErrors) rejected.forEach(it => console.log(chalk.red(it.reason)))
    console.groupEnd()
 
-   emptyDirSync(tmpDir.name)
-   tmpDir.removeCallback()
+   console.groupEnd()
+}
+
+function getTmpDir(options: Options) {
+   if (options.cachedResources) {
+      ensureDirSync(options.cachedResources)
+      return { name: options.cachedResources }
+   }
+   const { name, removeCallback } = dirSync()
+   return {
+      name,
+      cleanup: () => {
+         emptyDirSync(name)
+         removeCallback()
+      },
+   }
+}
+
+export default async function render(from: IResolver, to: MergerOptions, options: Options) {
+   const tmpDir = getTmpDir(options)
+
+   if (options.cachedResources && readdirSync(tmpDir.name).length > 0) {
+      console.log('Using cached assets')
+      return renderUsing(options.cachedResources, options, options)
+   }
+
+   const extractor = createDefaultMergers({ output: tmpDir.name, overwrite: false, silent: true })
+   await extractor.run(from)
+
+   await renderUsing(tmpDir.name, to, options)
+
+   tmpDir.cleanup?.()
 }

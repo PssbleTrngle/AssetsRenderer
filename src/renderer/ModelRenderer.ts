@@ -102,10 +102,10 @@ export default class ModelRenderer {
       }
    }
 
-   render(block: Named) {
+   async render(block: Named) {
       const model = this.getBlockModel(block)
       try {
-         return this.renderModel(model)
+         return await this.renderModel(model)
       } catch (e) {
          if (e instanceof Error) throw new Error(`Error rendering ${idOf(block)}: ${e.message}`)
          else throw e

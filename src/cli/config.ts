@@ -34,9 +34,20 @@ const sections: Section[] = [
          },
          {
             name: 'overwrite',
-            defaultValue: true,
+            defaultValue: false,
             type: Boolean,
             description: 'Wether or not overwrite already existing renders',
+         },
+         {
+            name: 'keep',
+            defaultValue: 'opposite of the {italic overwrite} value',
+            type: Boolean,
+            description: 'Do not empty the output directory at start',
+         },
+         {
+            name: 'cached-resources',
+            typeLabel: '{underline directory}',
+            description: 'Locations of the cached resources',
          },
          {
             name: 'include',
@@ -60,7 +71,7 @@ const sections: Section[] = [
    },
 ]
 
-export interface CliOptions extends Options, MergerOptions, Omit<ResolverOptions, 'exclude'> {}
+export interface CliOptions extends Options, MergerOptions, ResolverOptions {}
 
 export function readConfig(configFile?: string) {
    const file = configFile ?? '.renderrc'
@@ -77,10 +88,13 @@ export default function getOptions(configFile?: string): CliOptions {
       '--exclude': [String],
       '--config': String,
       '--overwrite': Boolean,
+      '--keep': Boolean,
       '--from': String,
       '--output': String,
       '-c': '--config',
+      '--print-errors': Boolean,
       '--help': Boolean,
+      '--cached-resources': String,
       '-h': '--help',
    })
 
@@ -93,11 +107,16 @@ export default function getOptions(configFile?: string): CliOptions {
    const config = readConfig(configFile ?? args['--config'])
    const output = args['--output'] ?? config?.output ?? 'merged.zip'
 
+   const overwrite = args['--overwrite'] ?? config?.overwrite
+
    return {
       from: args['--from'] ?? config?.from ?? 'resources',
       include: args['--include'] ?? config?.include,
       exclude: args['--exclude'] ?? config?.exclude,
-      overwrite: args['--overwrite'] ?? config?.overwrite ?? true,
+      overwrite,
+      keep: args['--keep'] ?? config?.keep ?? !overwrite,
+      cachedResources: args['--cached-resources'] ?? config?.cachedResources,
+      printErrors: args['--print-errors'] ?? config?.printErrors,
       output,
    }
 }
