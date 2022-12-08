@@ -20,16 +20,6 @@ jobs:
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-         - run: pnpm run build
-           working-directory: packages/lib
-           env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-         - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer
-         - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer/src
-         - run: ls packages/lib/dist
-         - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer/dist
-
          - run: pnpm run test
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
