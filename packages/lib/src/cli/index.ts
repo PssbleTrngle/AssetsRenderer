@@ -4,7 +4,7 @@ import getOptions from './config.js'
 
 async function run() {
    const options = getOptions()
-   await renderFrom(options, options, options)
+   await renderFrom(options.from, options, options)
 }
 
 run().catch(async e => {

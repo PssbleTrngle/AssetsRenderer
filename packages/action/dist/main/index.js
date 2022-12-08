@@ -63416,7 +63416,7 @@ function run() {
                     return [4 /*yield*/, (cache === null || cache === void 0 ? void 0 : cache.restore())];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, (0,dist_namespaceObject.renderFrom)({ from: from }, { overwrite: true, keep: true, output: output }, { cachedResources: cache === null || cache === void 0 ? void 0 : cache.path, overwrite: false, exclude: exclude, include: include })];
+                    return [4 /*yield*/, (0,dist_namespaceObject.renderFrom)(from, { overwrite: true, keep: true, output: output }, { cachedResources: cache === null || cache === void 0 ? void 0 : cache.path, overwrite: false, exclude: exclude, include: include })];
                 case 2:
                     _a.sent();
                     return [2 /*return*/];

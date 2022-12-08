@@ -81,8 +81,8 @@ function getTmpDir(options: Options) {
    }
 }
 
-export async function renderFrom(from: ResolverOptions, to: MergerOptions, options: Options) {
-   const resolver = createResolver({ ...from, include: ['assets/**'] })
+export async function renderFrom(from: ResolverOptions['from'], to: MergerOptions, options: Options) {
+   const resolver = createResolver({ from, include: ['assets/**'] })
    return generateAndRender(resolver, to, options)
 }
 
@@ -91,7 +91,7 @@ async function generateAndRender(from: IResolver, to: MergerOptions, options: Op
 
    if (options.cachedResources && readdirSync(tmpDir.name).length > 0) {
       console.log('Using cached assets')
-      return renderUsing(options.cachedResources, options, options)
+      return renderUsing(options.cachedResources, to, options)
    }
 
    const extractor = createDefaultMergers({ output: tmpDir.name, overwrite: false, silent: true })

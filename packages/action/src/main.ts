@@ -10,7 +10,7 @@ export default async function run() {
    await cache?.restore()
 
    await renderFrom(
-      { from },
+      from,
       { overwrite: true, keep: true, output },
       { cachedResources: cache?.path, overwrite: false, exclude, include }
    )
