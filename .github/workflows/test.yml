@@ -20,6 +20,6 @@ jobs:
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-         - run: npm run test
+         - run: pnpm run test
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
