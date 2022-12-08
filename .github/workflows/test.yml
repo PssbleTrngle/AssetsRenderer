@@ -20,6 +20,8 @@ jobs:
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+         - run: ls packages/action/node_modules/@pssbletrngle
+
          - run: pnpm run test
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
