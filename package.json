@@ -7,7 +7,7 @@
    ],
    "scripts": {
       "build": "turbo run build",
-      "release": "turbo run build && npm publish packages/lib",
+      "release": "turbo run build && npm publish --workspace packages/lib",
       "lint": "turbo run lint",
       "test": "turbo run test",
       "format": "prettier --write packages/**/*.ts"
