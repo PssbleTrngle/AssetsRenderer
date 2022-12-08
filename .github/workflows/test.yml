@@ -20,7 +20,9 @@ jobs:
            env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-         - run: ls packages/action/node_modules/@pssbletrngle
+         - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer
+         - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer/src
+         - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer/dist
 
          - run: pnpm run test
            env:
