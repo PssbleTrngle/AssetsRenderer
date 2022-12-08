@@ -1,0 +1,25 @@
+name: Test & Lint
+on:
+   push:
+
+jobs:
+   test:
+      runs-on: ubuntu-20.04
+      steps:
+         - uses: actions/checkout@v3
+
+         - uses: actions/setup-node@v3
+           with:
+              node-version: 16
+
+         - uses: pnpm/action-setup@v2
+           with:
+              run_install: |
+                 - recursive: true
+                   args: [--frozen-lockfile, --strict-peer-dependencies]
+           env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+         - run: pnpm run test
+           env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
