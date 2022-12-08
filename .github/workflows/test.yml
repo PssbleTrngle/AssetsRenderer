@@ -27,6 +27,7 @@ jobs:
 
          - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer
          - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer/src
+         - run: ls packages/lib/dist
          - run: ls packages/action/node_modules/@pssbletrngle/assets-renderer/dist
 
          - run: pnpm run test
