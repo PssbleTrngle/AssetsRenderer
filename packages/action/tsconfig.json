@@ -1,0 +1,7 @@
+{
+   "extends": "tsconfig-config-custom/base.json",
+   "compilerOptions": {
+      "rootDir": "src"
+   },
+   "exclude": ["node_modules", "**/*.test.ts"]
+}

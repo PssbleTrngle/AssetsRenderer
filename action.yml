@@ -1,0 +1,34 @@
+name: AssetsRenderer Action
+description: Renders minecraft item icons using provided assets
+
+inputs:
+   from:
+      description: The directory that contains the used resourcepacks.
+      required: true
+      default: resources
+
+   output:
+      description: The output directory of all rendered icons.
+      required: true
+      default: rendered
+
+   cache:
+      description: Should extracted resources and rendered icons be cached?
+      default: 'true'
+
+   include:
+      description: 'A multiline list of included icons. (ex: minecraft:acacia_*)'
+      required: false
+
+   exclude:
+      description: 'A multiline list of included icons. (ex: *:stone)'
+      required: false
+
+runs:
+   using: node16
+   main: packages/action/dist/main/index.js
+   post: packages/action/dist/post/index.js
+
+branding:
+   icon: box
+   color: green
