@@ -63217,11 +63217,11 @@ __nccwpck_require__.d(__webpack_exports__, {
 // EXTERNAL MODULE: ../../node_modules/.pnpm/@actions+core@1.10.0/node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(7114);
 // EXTERNAL MODULE: ../../node_modules/.pnpm/@actions+cache@3.1.0-beta.2/node_modules/@actions/cache/lib/cache.js
-var cache = __nccwpck_require__(5712);
+var lib_cache = __nccwpck_require__(5712);
 // EXTERNAL MODULE: ../../node_modules/.pnpm/@actions+glob@0.3.0/node_modules/@actions/glob/lib/glob.js
 var glob = __nccwpck_require__(4964);
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6113);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
 ;// CONCATENATED MODULE: ./src/cache.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -63259,60 +63259,42 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 
 
 
-function cacheKey(_a) {
-    var from = _a.from, _b = _a.exclude, exclude = _b === void 0 ? [] : _b, _c = _a.include, include = _c === void 0 ? [] : _c;
-    var resourceHash = (0,glob.hashFiles)(from.join('\n'));
-    var filter = __spreadArray(__spreadArray([], exclude.sort(), true), include.sort(), true).join('\n');
-    var filterHash = exclude ? (0,external_crypto_.createHash)('sha256').update(filter).digest('hex') : '';
-    return {
-        key: "renderer-resources-".concat(resourceHash, "-").concat(filterHash),
-        restoreKeys: ["renderer-resources-".concat(resourceHash, "-")],
-    };
-}
-function createCache(inputs) {
+function createCache(_a) {
     var _this = this;
-    if (!inputs.cache)
+    var cache = _a.cache, from = _a.from;
+    if (!cache)
         return undefined;
     var path = '.cache/renderer';
+    var resourceHash = (0,glob.hashFiles)(from.join('\n'));
+    var resourceKey = "renderer-resources-".concat(resourceHash);
     var restore = function () { return __awaiter(_this, void 0, void 0, function () {
-        var _a, key, restoreKeys;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    _a = cacheKey(inputs), key = _a.key, restoreKeys = _a.restoreKeys;
-                    return [4 /*yield*/, (0,cache.restoreCache)([path, inputs.output], key, restoreKeys)];
-                case 1:
-                    _b.sent();
-                    return [2 /*return*/];
-            }
-        });
-    }); };
-    var save = function () { return __awaiter(_this, void 0, void 0, function () {
-        var key;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    key = cacheKey(inputs).key;
-                    return [4 /*yield*/, (0,cache.saveCache)([path, inputs.output], key)];
+                case 0: return [4 /*yield*/, (0,lib_cache.restoreCache)([path], resourceKey)];
                 case 1:
                     _a.sent();
                     return [2 /*return*/];
             }
         });
     }); };
-    return { save: save, restore: restore, path: path };
+    var save = function () { return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, (0,lib_cache.saveCache)([path], resourceKey)];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    var paths = {
+        resources: (0,external_path_.join)(path, 'resources'),
+        icons: (0,external_path_.join)(path, 'icons'),
+    };
+    return { save: save, restore: restore, paths: paths };
 }
 
 ;// CONCATENATED MODULE: ./src/input.ts

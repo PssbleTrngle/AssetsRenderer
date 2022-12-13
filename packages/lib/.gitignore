@@ -1,8 +1,2 @@
 # compiled JS
 dist
-
-# Local resources
-tmp
-resources
-rendered
-rendered.zip

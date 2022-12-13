@@ -1,32 +1,28 @@
 import { restoreCache, saveCache } from '@actions/cache'
 import { hashFiles } from '@actions/glob'
-import { createHash } from 'crypto'
+import { join } from 'path'
 import { ActionInputs } from './input'
 
-function cacheKey({ from, exclude = [], include = [] }: ActionInputs) {
-   const resourceHash = hashFiles(from.join('\n'))
-   const filter = [...exclude.sort(), ...include.sort()].join('\n')
-   const filterHash = exclude ? createHash('sha256').update(filter).digest('hex') : ''
-   return {
-      key: `renderer-resources-${resourceHash}-${filterHash}`,
-      restoreKeys: [`renderer-resources-${resourceHash}-`],
-   }
-}
-
-export function createCache(inputs: ActionInputs) {
-   if (!inputs.cache) return undefined
+export function createCache({ cache, from }: ActionInputs) {
+   if (!cache) return undefined
 
    const path = '.cache/renderer'
 
+   const resourceHash = hashFiles(from.join('\n'))
+   const resourceKey = `renderer-resources-${resourceHash}`
+
    const restore = async () => {
-      const { key, restoreKeys } = cacheKey(inputs)
-      await restoreCache([path, inputs.output], key, restoreKeys)
+      await restoreCache([path], resourceKey)
    }
 
    const save = async () => {
-      const { key } = cacheKey(inputs)
-      await saveCache([path, inputs.output], key)
+      await saveCache([path], resourceKey)
    }
 
-   return { save, restore, path }
+   const paths = {
+      resources: join(path, 'resources'),
+      icons: join(path, 'icons'),
+   }
+
+   return { save, restore, paths }
 }

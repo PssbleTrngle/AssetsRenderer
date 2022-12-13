@@ -26,3 +26,9 @@ yarn-error.log*
 
 # turbo
 .turbo
+
+# Local resources
+tmp
+resources
+rendered
+rendered.zip

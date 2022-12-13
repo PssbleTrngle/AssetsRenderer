@@ -1,0 +1,6 @@
+{
+   "name": "@types/node-canvas-webgl",
+   "dependencies": {
+      "@types/node": "^17.0.45"
+   }
+}

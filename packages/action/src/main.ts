@@ -1,4 +1,6 @@
-import { renderFrom } from '@pssbletrngle/assets-renderer'
+import { renderFrom } from '@pssbletrngle/assets-renderer/src/index'
+import { FolderResolver } from '@pssbletrngle/pack-resolver'
+import { createDefaultMergers } from '@pssbletrngle/resource-merger'
 import { createCache } from './cache'
 import getInputs from './input'
 
@@ -11,7 +13,13 @@ export default async function run() {
 
    await renderFrom(
       from,
-      { overwrite: true, keep: true, output },
-      { cachedResources: cache?.path, overwrite: false, exclude, include }
+      { overwrite: true, keep: true, output: cache?.paths.icons ?? output },
+      { cachedResources: cache?.paths.resources, overwrite: false, exclude, include }
    )
+
+   if (cache) {
+      const cachedIcons = new FolderResolver(cache.paths.icons, inputs)
+      const mover = createDefaultMergers({ silent: true, output })
+      await mover.run(cachedIcons)
+   }
 }

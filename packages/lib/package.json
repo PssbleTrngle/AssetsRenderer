@@ -58,6 +58,7 @@
       "prettier": "^2.7.1",
       "ts-node": "^10.9.1",
       "tsconfig-config-custom": "workspace:*",
+      "@types/node-canvas-webgl": "workspace:*",
       "typescript": "^4.8.2"
    }
 }
