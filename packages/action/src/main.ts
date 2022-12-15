@@ -1,4 +1,4 @@
-import { renderFrom } from '@pssbletrngle/assets-renderer/src/index'
+import { renderFrom } from '@pssbletrngle/assets-renderer'
 import { FolderResolver } from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers } from '@pssbletrngle/resource-merger'
 import { createCache } from './cache'

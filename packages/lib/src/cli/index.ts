@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import chalk from 'chalk'
 import { renderFrom } from '../renderer/index.js'
 import getOptions from './config.js'

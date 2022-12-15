@@ -4,7 +4,7 @@
       "lint": "eslint src/**/*.ts",
       "test": "jest",
       "dev": "node dist/main/index.js && dist/main/post.js",
-      "build:main": "ncc build src/main.ts --out dist/main --source-map",
+      "build:main": "ncc build src/entrypoint.ts --out dist/main --source-map",
       "build:post": "ncc build src/post.ts --out dist/post --source-map",
       "build": "pnpm run build:main && pnpm run build:post"
    },

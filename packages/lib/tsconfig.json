@@ -1,6 +1,7 @@
 {
    "extends": "tsconfig-config-custom/base.json",
    "compilerOptions": {
+      "target": "es2018",
       "outDir": "dist",
       "rootDir": "src"
    },
