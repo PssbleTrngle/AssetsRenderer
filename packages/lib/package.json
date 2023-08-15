@@ -48,7 +48,7 @@
       "fs-extra": "^11.1.0",
       "lodash-es": "^4.17.21",
       "minimatch": "^5.1.0",
-      "node-canvas-webgl": "^0.2.7",
+      "node-canvas-webgl": "^0.3.0",
       "three": "^0.147.0",
       "tmp": "^0.2.1"
    },
