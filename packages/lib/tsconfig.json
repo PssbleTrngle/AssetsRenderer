@@ -1,9 +1,13 @@
 {
    "extends": "tsconfig-config-custom/base.json",
    "compilerOptions": {
-      "target": "es2018",
+      "module": "ES2022",
+      "target": "ES2018",
       "outDir": "dist",
       "rootDir": "src"
    },
-   "exclude": ["node_modules", "dist"]
+   "exclude": [
+      "node_modules",
+      "dist"
+   ]
 }

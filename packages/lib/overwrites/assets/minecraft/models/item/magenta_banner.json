@@ -1,0 +1,6 @@
+{
+   "parent": "assets_renderer:item/static_banner",
+   "textures": {
+      "banner": "assets_renderer:entity/banner/magenta"
+   }
+}

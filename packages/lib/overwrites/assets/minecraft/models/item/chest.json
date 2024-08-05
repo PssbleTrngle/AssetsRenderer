@@ -1,0 +1,6 @@
+{
+   "parent": "assets_renderer:item/static_chest",
+   "textures": {
+      "all": "minecraft:entity/chest/normal"
+   }
+}

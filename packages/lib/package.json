@@ -9,15 +9,17 @@
       "render": "dist/cli/index.js"
    },
    "files": [
-      "dist"
+      "dist",
+      "overwrites"
    ],
    "type": "module",
-   "packageManager": "pnpm@7.9.5",
+   "packageManager": "pnpm@9.6.0",
    "scripts": {
       "build": "tsc",
       "lint": "eslint src/**/*.ts",
-      "render-acacia": "node dist/cli --output rendered --include *:acacia_*",
-      "render-all": "node dist/cli --output rendered --cached-resources tmp --print-errors"
+      "render": "node dist/cli --output rendered",
+      "render-acacia": "pnpm run render --include *:acacia_*",
+      "render-all": "pnpm run render --cached-resources tmp --print-errors"
    },
    "repository": {
       "type": "git",
@@ -32,8 +34,8 @@
    },
    "homepage": "https://github.com/PssbleTrngle/AssetsRenderer#readme",
    "dependencies": {
-      "@pssbletrngle/pack-resolver": "1.2.0",
-      "@pssbletrngle/resource-merger": "1.2.4",
+      "@pssbletrngle/pack-resolver": "^1.4.1",
+      "@pssbletrngle/resource-merger": "^1.2.4",
       "@types/command-line-usage": "^5.0.2",
       "@types/fs-extra": "^9.0.13",
       "@types/lodash-es": "^4.17.6",

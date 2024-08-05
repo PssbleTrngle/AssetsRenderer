@@ -1,11 +1,19 @@
-import { createFilter, createResolver, IResolver, Options as ResolverOptions } from '@pssbletrngle/pack-resolver'
+import {
+   createFilter,
+   createMergedResolver,
+   createResolver,
+   IResolver,
+   mergeResolvers,
+   Options as ResolverOptions,
+} from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers, Options as MergerOptions } from '@pssbletrngle/resource-merger'
 import chalk from 'chalk'
 import { readdirSync } from 'fs'
 import { emptyDirSync, ensureDirSync } from 'fs-extra'
 import { uniqBy } from 'lodash-es'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { dirSync } from 'tmp'
+import { fileURLToPath } from 'url'
 import Options from '../cli/options.js'
 import ModelRenderer from '../renderer/ModelRenderer.js'
 import { idOf, Named } from '../renderer/models.js'
@@ -82,9 +90,19 @@ function getTmpDir(options: Options) {
    }
 }
 
+function createBuiltinResolver() {
+   const fileName = fileURLToPath(import.meta.url)
+   const from = resolve(fileName, '..', '..', '..', 'overwrites')
+   console.log(from)
+   return createResolver({ from })
+}
+
 export async function renderFrom(from: ResolverOptions['from'], to: MergerOptions, options: Options) {
-   const resolver = createResolver({ from, include: ['assets/**'] })
-   return generateAndRender(resolver, to, options)
+   const resolvers = [createMergedResolver({ from, include: ['assets/**'] })]
+   if (options.includeBuiltinOverrides !== false) {
+      resolvers.push(createBuiltinResolver())
+   }
+   return generateAndRender(mergeResolvers(resolvers), to, options)
 }
 
 async function generateAndRender(from: IResolver, to: MergerOptions, options: Options) {
