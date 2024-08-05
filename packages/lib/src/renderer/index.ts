@@ -3,7 +3,7 @@ import { createDefaultMergers, Options as MergerOptions } from '@pssbletrngle/re
 import chalk from 'chalk'
 import { readdirSync } from 'fs'
 import { emptyDirSync, ensureDirSync } from 'fs-extra'
-import { uniq } from 'lodash-es'
+import { uniqBy } from 'lodash-es'
 import { join } from 'path'
 import { dirSync } from 'tmp'
 import Options from '../cli/options.js'
@@ -24,7 +24,7 @@ export async function renderUsing(assetsDir: string, to: MergerOptions, options:
    const results: Result<Named>[] = []
 
    const output = createDefaultMergers({ ...to, silent: true })
-   const all = uniq([...renderer.getBlocks(), ...renderer.getItems()])
+   const all = uniqBy([...renderer.getBlocks(), ...renderer.getItems()], it => `${it.mod}:${it.id}`)
    console.log(`Found ${all.length} total models`)
 
    const filter = createFilter(options)

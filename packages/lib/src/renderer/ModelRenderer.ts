@@ -169,13 +169,15 @@ export default class ModelRenderer {
       if (!existsSync(path)) throw new Error(`Could not find model for ${idOf(block)}`)
       const raw = readFileSync(path).toString()
       const parsed = JSON.parse(raw) as BlockModel
+      let merged = parsed
 
-      if (parsed.parent) {
-         if (parsed.parent.includes('builtin')) merge(parsed, BUILTIN)
-         else merge(parsed, this.getModel(this.keyFrom(parsed.parent), type))
+      if (merged.parent) {
+         if (merged.parent === 'builtin/entity') throw new Error('block has custom entity-renderer')
+         if (merged.parent === 'builtin/generated') merged = merge({}, BUILTIN, merged)
+         else merged = merge({}, this.getModel(this.keyFrom(merged.parent), type), merged)
       }
 
-      return parsed
+      return merged
    }
 
    async getTexture({ mod, id }: Named) {
@@ -236,9 +238,19 @@ export default class ModelRenderer {
          ctx.translate(-width / 2, -height / 2)
       }
 
-      const uv = face.uv ?? [0, 0, width, height]
+      const uv = (face.uv ?? [0, 0, 16, 16]).map(it => it / 16)
 
-      ctx.drawImage(image, uv[0], uv[1], uv[2] - uv[0], uv[3] - uv[1], 0, 0, width, height)
+      ctx.drawImage(
+         image,
+         uv[0] * width,
+         uv[1] * height,
+         (uv[2] - uv[0]) * width,
+         (uv[3] - uv[1]) * height,
+         0,
+         0,
+         width,
+         height
+      )
 
       const texture = new Texture(canvas as any)
       texture.magFilter = NearestFilter
