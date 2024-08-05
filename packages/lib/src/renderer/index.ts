@@ -90,19 +90,23 @@ function getTmpDir(options: Options) {
    }
 }
 
-function createBuiltinResolver() {
+function createBuiltinResolver(): IResolver {
    const fileName = fileURLToPath(import.meta.url)
    const from = resolve(fileName, '..', '..', '..', 'overwrites')
-   console.log(from)
    return createResolver({ from })
 }
 
 export async function renderFrom(from: ResolverOptions['from'], to: MergerOptions, options: Options) {
-   const resolvers = [createMergedResolver({ from, include: ['assets/**'] })]
+   const resolvers: IResolver[] = []
+   const merged = createMergedResolver({ from, include: ['assets/**'] })
+
    if (options.includeBuiltinOverrides !== false) {
       resolvers.push(createBuiltinResolver())
+      console.log('<built-in overwrites>')
    }
-   return generateAndRender(mergeResolvers(resolvers), to, options)
+   resolvers.push(merged)
+   // TODO fix in PackResolver
+   return generateAndRender(mergeResolvers(resolvers, { async: false } as any), to, options)
 }
 
 async function generateAndRender(from: IResolver, to: MergerOptions, options: Options) {
