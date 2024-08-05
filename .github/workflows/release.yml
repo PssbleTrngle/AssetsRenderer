@@ -25,13 +25,13 @@ jobs:
               run_install: |
                  - recursive: true
                    args: [--frozen-lockfile, --strict-peer-dependencies]
+           env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
          - uses: actions/setup-node@v4
            with:
               node-version: 18
               cache: pnpm
-           env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
          - run: pnpm run release
            env:
