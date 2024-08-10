@@ -4,12 +4,15 @@ import { merge } from 'lodash-es'
 import { createCanvas, loadImage } from 'node-canvas-webgl'
 import { join, parse } from 'path'
 import {
+   AmbientLight,
    BoxGeometry,
    DirectionalLight,
    Material,
    MathUtils,
    Mesh,
    MeshBasicMaterial,
+   MeshStandardMaterial,
+   MeshStandardMaterialParameters,
    NearestFilter,
    OrthographicCamera,
    Scene,
@@ -26,7 +29,7 @@ const BUILTIN: BlockModel = {
    display: {
       gui: {
          rotation: [-15, -90, 0],
-         scale: [0.625, 0.625, 0.625],
+         scale: [1, 1, 1],
          translation: [0, 0, 0],
       },
    },
@@ -61,10 +64,16 @@ export default class ModelRenderer {
    })
 
    constructor(private readonly dir: string) {
-      const light = new DirectionalLight(0xffffff, 1.2)
-      light.position.set(-15, 30, -25)
-      this.scene.add(light)
       this.renderer.sortObjects = false
+   }
+
+   private addLight() {
+      const ambient = new AmbientLight(0xffffff, 0.8)
+      this.scene.add(ambient)
+
+      const directional = new DirectionalLight(0xffffff, 0.4)
+      directional.position.set(25, 30, -15)
+      this.scene.add(directional)
    }
 
    getNamespaces() {
@@ -117,7 +126,7 @@ export default class ModelRenderer {
       if (!gui) throw new Error('No gui configuration')
       if (!elements) throw new Error('No elements')
 
-      this.camera.zoom = 1 / Math.sqrt(gui.scale[0] ** 2 + gui.scale[1] ** 2 + gui.scale[2] ** 2)
+      this.camera.zoom = Math.sqrt(gui.scale[0] ** 2 + gui.scale[1] ** 2 + gui.scale[2] ** 2)
 
       this.scene.clear()
 
@@ -139,6 +148,8 @@ export default class ModelRenderer {
             this.scene.add(cube)
          })
       )
+
+      if (this.shaded(model)) this.addLight()
 
       const rotation = new Vector3(...gui.rotation).add(new Vector3(195, -90, -45))
       this.camera.position.set(
@@ -168,13 +179,15 @@ export default class ModelRenderer {
       const path = this.modelPath(block, type)
       if (!existsSync(path)) throw new Error(`Could not find model for ${idOf(block)}`)
       const raw = readFileSync(path).toString()
-      const parsed = JSON.parse(raw) as BlockModel
+      const { parent, ...parsed } = JSON.parse(raw) as BlockModel
       let merged = parsed
 
-      if (merged.parent) {
-         if (merged.parent === 'builtin/entity') throw new Error('block has custom entity-renderer')
-         if (merged.parent === 'builtin/generated') merged = merge({}, BUILTIN, merged)
-         else merged = merge({}, this.getModel(this.keyFrom(merged.parent), type), merged)
+      if (parent) {
+         if (parent === 'builtin/entity') throw new Error('block has custom entity-renderer')
+         if (parent === 'builtin/generated') merged = merge({}, BUILTIN, merged)
+         else merged = merge({}, this.getModel(this.keyFrom(parent), type), merged)
+
+         merged.parents = [...(merged.parents ?? []), parent]
       }
 
       return merged
@@ -208,6 +221,11 @@ export default class ModelRenderer {
          })
       )
       return materials
+   }
+
+   private shaded(block: BlockModel) {
+      const root = this.keyFrom('block/block')
+      return root.mod === 'minecraft' && block.parents?.[0] === root.id
    }
 
    private decodeTexture(texture: string, block: BlockModel): string | null {
@@ -257,7 +275,7 @@ export default class ModelRenderer {
       texture.minFilter = NearestFilter
       texture.needsUpdate = true
 
-      return new MeshBasicMaterial({
+      const props: MeshStandardMaterialParameters = {
          map: texture,
          //color: 0xffffff,
          transparent: true,
@@ -265,6 +283,12 @@ export default class ModelRenderer {
          //metalness: 0,
          //emissive: 1,
          alphaTest: 0.1,
-      })
+      }
+
+      if (this.shaded(block)) {
+         return new MeshStandardMaterial(props)
+      } else {
+         return new MeshBasicMaterial(props)
+      }
    }
 }
