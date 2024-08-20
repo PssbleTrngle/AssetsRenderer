@@ -4,6 +4,7 @@ import {
    createResolver,
    IResolver,
    mergeResolvers,
+   ResolverInfo,
    Options as ResolverOptions,
 } from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers, Options as MergerOptions } from '@pssbletrngle/resource-merger'
@@ -12,11 +13,25 @@ import { readdirSync } from 'fs'
 import { emptyDirSync, ensureDirSync } from 'fs-extra'
 import { uniqBy } from 'lodash-es'
 import { join, resolve } from 'path'
+import ProgressBar from 'progress'
 import { dirSync } from 'tmp'
 import { fileURLToPath } from 'url'
 import Options from '../cli/options.js'
 import ModelRenderer from '../renderer/ModelRenderer.js'
 import { idOf, Named } from '../renderer/models.js'
+
+function createProgress(total: number) {
+   if (process.env.CI === 'true') return null
+
+   return new ProgressBar(':percent :bar :current/:total (:etas)', {
+      total,
+      complete: '■',
+      incomplete: '□',
+      width: 60,
+      clear: true,
+      callback: () => console.log(),
+   })
+}
 
 export async function renderUsing(assetsDir: string, to: MergerOptions, options: Options) {
    const renderer = new ModelRenderer(join(assetsDir, 'assets'))
@@ -46,6 +61,8 @@ export async function renderUsing(assetsDir: string, to: MergerOptions, options:
          return !cached
       })
 
+   const progress = createProgress(models.length)
+
    const renderResolver: IResolver = {
       extract: async acceptor => {
          for (const block of models)
@@ -55,12 +72,15 @@ export async function renderUsing(assetsDir: string, to: MergerOptions, options:
                results.push({ status: 'fulfilled', value: block })
             } catch (e) {
                results.push({ status: 'rejected', reason: (e as Error).message })
+            } finally {
+               progress?.tick()
             }
       },
    }
 
    console.log()
-   console.group(`Rendering ${models.length} models...`)
+   console.log(`Rendering ${models.length} models...`)
+
    await output.run(renderResolver)
 
    const fulfilled = results.filter(it => it.status === 'fulfilled')
@@ -90,21 +110,20 @@ function getTmpDir(options: Options) {
    }
 }
 
-function createBuiltinResolver(): IResolver {
+function createBuiltinResolver(): ResolverInfo {
    const fileName = fileURLToPath(import.meta.url)
    const from = resolve(fileName, '..', '..', '..', 'overwrites')
-   return createResolver({ from })
+   const resolver = createResolver({ from })
+   return { resolver, name: '<built-in overwrites>' }
 }
 
 export async function renderFrom(from: ResolverOptions['from'], to: MergerOptions, options: Options) {
-   const resolvers: IResolver[] = []
-   const merged = createMergedResolver({ from, include: ['assets/**'] })
+   const resolvers: (IResolver | ResolverInfo)[] = []
 
    if (options.includeBuiltinOverrides !== false) {
       resolvers.push(createBuiltinResolver())
-      console.log('<built-in overwrites>')
    }
-   resolvers.push(merged)
+   resolvers.push(createMergedResolver({ from, include: ['assets/**'] }))
    // TODO fix in PackResolver
    return generateAndRender(mergeResolvers(resolvers, { async: false } as any), to, options)
 }
