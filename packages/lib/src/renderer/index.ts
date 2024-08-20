@@ -117,7 +117,9 @@ function createBuiltinResolver(): ResolverInfo {
    return { resolver, name: '<built-in overwrites>' }
 }
 
-export async function renderFrom(from: ResolverOptions['from'], to: MergerOptions, options: Options) {
+type PartialMergerOptions = Omit<MergerOptions, keyof Options>
+
+export async function renderFrom(from: ResolverOptions['from'], to: PartialMergerOptions, options: Options) {
    const resolvers: (IResolver | ResolverInfo)[] = []
 
    if (options.includeBuiltinOverrides !== false) {
@@ -128,18 +130,20 @@ export async function renderFrom(from: ResolverOptions['from'], to: MergerOption
    return generateAndRender(mergeResolvers(resolvers, { async: false } as any), to, options)
 }
 
-async function generateAndRender(from: IResolver, to: MergerOptions, options: Options) {
+async function generateAndRender(from: IResolver, to: PartialMergerOptions, options: Options) {
    const tmpDir = getTmpDir(options)
+
+   const mergedOptions = { ...options, ...to }
 
    if (options.cachedResources && readdirSync(tmpDir.name).length > 0) {
       console.log('Using cached assets')
-      return renderUsing(options.cachedResources, to, options)
+      return renderUsing(options.cachedResources, mergedOptions, options)
    }
 
    const extractor = createDefaultMergers({ output: tmpDir.name, overwrite: false, silent: true })
    await extractor.run(from)
 
-   await renderUsing(tmpDir.name, to, options)
+   await renderUsing(tmpDir.name, mergedOptions, options)
 
    tmpDir.cleanup?.()
 }
