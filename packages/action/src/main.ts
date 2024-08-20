@@ -13,8 +13,8 @@ export default async function run() {
 
    await renderFrom(
       from,
-      { overwrite: true, keep: true, output: cache?.paths.icons ?? output },
-      { cachedResources: cache?.paths.resources, overwrite: false, exclude, include }
+      { keep: true, output: cache?.paths.icons ?? output },
+      { cachedResources: cache?.paths.resources, overwrite: false, exclude, include },
    )
 
    if (cache) {
