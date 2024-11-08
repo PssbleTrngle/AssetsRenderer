@@ -10,9 +10,9 @@ export function idOf(named: Named) {
 }
 
 export interface Transform {
-   rotation: Vector
-   translation: Vector
-   scale: Vector
+   rotation?: Vector
+   translation?: Vector
+   scale?: Vector
 }
 
 export interface Rotation {

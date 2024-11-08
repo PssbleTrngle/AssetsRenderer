@@ -25,12 +25,16 @@ import { AnimationMeta, BlockModel, BlockSides, Element, Face, idOf, Named } fro
 
 const FACES = ['east', 'west', 'up', 'down', 'south', 'north'] as const
 
+const DEFAULT_TRANSLATION = [0, 0, 0] as const
+const DEFAULT_SCALE = [0, 0, 0] as const
+const DEFAULT_ROTATION = [1, 1, 1] as const
+
 const BUILTIN: BlockModel = {
    display: {
       gui: {
-         rotation: [-15, -90, 0],
-         scale: [1, 1, 1],
-         translation: [0, 0, 0],
+         rotation: [-15, 90, 0],
+         scale: DEFAULT_SCALE,
+         translation: DEFAULT_TRANSLATION,
       },
    },
    elements: [
@@ -50,13 +54,20 @@ const BUILTIN: BlockModel = {
 }
 
 export default class ModelRenderer {
-   private size = 512
-   private distance = 15
+   private readonly size = 512
+   private readonly distance = 15
 
-   private scene = new Scene()
-   private camera = new OrthographicCamera(-this.distance, this.distance, this.distance, -this.distance, 0.01, 20000)
-   private canvas = createCanvas(this.size, this.size)
-   private renderer = new WebGLRenderer({
+   private readonly scene = new Scene()
+   private readonly camera = new OrthographicCamera(
+      -this.distance,
+      this.distance,
+      this.distance,
+      -this.distance,
+      0.01,
+      20000
+   )
+   private readonly canvas = createCanvas(this.size, this.size)
+   private readonly renderer = new WebGLRenderer({
       canvas: this.canvas,
       alpha: true,
       antialias: true,
@@ -126,7 +137,8 @@ export default class ModelRenderer {
       if (!gui) throw new Error('No gui configuration')
       if (!elements) throw new Error('No elements')
 
-      this.camera.zoom = Math.sqrt(gui.scale[0] ** 2 + gui.scale[1] ** 2 + gui.scale[2] ** 2)
+      const scale = gui.scale ?? DEFAULT_SCALE
+      this.camera.zoom = Math.sqrt(scale[0] ** 2 + scale[1] ** 2 + scale[2] ** 2)
 
       this.scene.clear()
 
@@ -151,12 +163,13 @@ export default class ModelRenderer {
 
       if (this.shaded(model)) this.addLight()
 
-      const rotation = new Vector3(...gui.rotation).add(new Vector3(195, -90, -45))
+      const [rotX, rotY, rotZ] = gui.rotation ?? DEFAULT_ROTATION
+      const rotation = new Vector3(rotX, rotY, rotZ).add(new Vector3(195, -90, -45))
       this.camera.position.set(
-         ...(rotation.toArray().map(x => Math.sin(x * MathUtils.DEG2RAD) * 16) as [number, number, number])
+         ...(rotation.toArray().map(it => Math.sin(it * MathUtils.DEG2RAD) * 16) as [number, number, number])
       )
       this.camera.lookAt(0, 0, 0)
-      this.camera.position.add(new Vector3(...gui.translation))
+      this.camera.position.sub(new Vector3(...(gui.translation ?? DEFAULT_TRANSLATION)))
       this.camera.updateMatrix()
       this.camera.updateProjectionMatrix()
 

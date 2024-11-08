@@ -18,6 +18,7 @@
       "build": "tsc",
       "lint": "eslint src/**/*.ts",
       "render": "node dist/cli --output rendered",
+      "render-create": "pnpm run render --include create:*",
       "render-acacia": "pnpm run render --include *:acacia_*",
       "render-all": "pnpm run render --cached-resources tmp --print-errors"
    },
