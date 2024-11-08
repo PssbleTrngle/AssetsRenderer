@@ -26,13 +26,13 @@ import { AnimationMeta, BlockModel, BlockSides, Element, Face, idOf, Named } fro
 const FACES = ['east', 'west', 'up', 'down', 'south', 'north'] as const
 
 const DEFAULT_TRANSLATION = [0, 0, 0] as const
-const DEFAULT_SCALE = [0, 0, 0] as const
-const DEFAULT_ROTATION = [1, 1, 1] as const
+const DEFAULT_SCALE = [1, 1, 0] as const
+const DEFAULT_ROTATION = [0, 0, 0] as const
 
 const BUILTIN: BlockModel = {
    display: {
       gui: {
-         rotation: [-15, 90, 0],
+         rotation: [-15, -90, 0],
          scale: DEFAULT_SCALE,
          translation: DEFAULT_TRANSLATION,
       },
